@@ -5,4 +5,4 @@ It uses the left/right mouse buttons plus the two side buttons to attach audio c
 
 This program is meant to compliment other audio production software and is by no means a complete solution by itself.
 
-(https://img.itch.zone/aW1hZ2UvMzM0MjM3MS8xOTk4OTIxNS5wbmc=/original/EWDhVV.png)
+![Squeak program Preview](https://img.itch.zone/aW1hZ2UvMzM0MjM3MS8xOTk4OTIxNS5wbmc=/original/EWDhVV.png)
