@@ -1,0 +1,7 @@
+*Label*font: "Segoe UI" 8 bold
+*borderwidth: 10
+*highlightthickness: 0
+*font: "Segoe UI" 10
+*Entry*background: white
+*Text*background: white
+*Listbox*background: white
