@@ -1,4 +1,4 @@
-# Squeak Music Alchemy
+# Squeak
 My audio program Squeak compiles audio singles/one shots into a single layered music loop.
 
 It uses the left/right mouse buttons plus the two side buttons to attach audio clips, play them on the Canvas and generate a complete track.
