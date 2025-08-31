@@ -229,14 +229,14 @@ def record_from_speaker(event):
     else:
         DURATION = float(value)
 
-        output.insert(END, "Your recording time will begin in 5 seconds\n")
+        output.insert(END, "[+] Your recording time will begin in 5 seconds\n")
         output.yview(END)
 
         seconds = 0
         for i in range(0, 5):
             seconds += 1
             time.sleep(1)
-            output.insert(END, "%s\n" % seconds)
+            output.insert(END, "[+] \t\t%s\n" % seconds)
             output.yview(END)
             
         CHUNK_SIZE = 512
@@ -252,7 +252,7 @@ def record_from_speaker(event):
                 # Get default WASAPI info
                 wasapi_info = p.get_host_api_info_by_type(pyaudio.paWASAPI)
             except OSError:
-                output.insert(END, "Looks like WASAPI is not available on the system. Exiting...\n")
+                output.insert(END, "[-] Looks like WASAPI is not available on the system. Exiting...\n")
                 output.yview(END)
                 exit()
 
@@ -269,11 +269,11 @@ def record_from_speaker(event):
                         default_speakers = loopback
                         break
                 else:
-                    output.insert(END, "Default loopback output device not found. Exiting...\n")
+                    output.insert(END, "[-] Default loopback output device not found. Exiting...\n")
                     output.yview(END)
                     exit()
                     
-            output.insert(END, "Recording from: (%s) %s\n\n" % (default_speakers['index'], default_speakers['name']))
+            output.insert(END, "[+] Recording from: (%s) %s\n\n" % (default_speakers['index'], default_speakers['name']))
             output.yview(END)
 
             wave_file = wave.open(desktop, 'wb')
@@ -286,13 +286,17 @@ def record_from_speaker(event):
                 return (in_data, pyaudio.paContinue)
 
             with p.open(format=pyaudio.paInt16, channels=default_speakers["maxInputChannels"], rate=int(default_speakers["defaultSampleRate"]), frames_per_buffer=CHUNK_SIZE, input=True, input_device_index=default_speakers["index"],stream_callback=callback) as stream:
-                output.insert(END, "The next %s seconds will be recorded and saved to %s\n\n" % (DURATION, folder))
+                output.insert(END, "[+] The next %s seconds will be recorded and saved to %s\n\n" % (DURATION, folder))
                 output.yview(END)
                 time.sleep(DURATION)
             
-            output.insert(END, "The recording time is over and your file has been saved to %s\n" % (desktop))
+            output.insert(END, "[+] The recording time is over and your file has been saved to %s\n" % (desktop))
             output.yview(END)
             wave_file.close()
+        
+        click_list.clear()
+        output.insert(END, "[+] After recording your squeaklist is now cleared\n")
+        output.yview(END)
 
 
 root = Tk()
