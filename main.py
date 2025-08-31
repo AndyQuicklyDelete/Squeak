@@ -5,7 +5,6 @@ from tkinter import font
 from tkinter import ttk
 from PIL import ImageTk, Image
 from pydub import AudioSegment
-# from playsound import playsound
 import winsound
 import pyaudiowpatch as pyaudio
 import time
@@ -147,7 +146,6 @@ def firstToClap(event):
             mouse_three = mouse_three.read()
         if muted == False:
             winsound.PlaySound(mouse_three, winsound.SND_ASYNC)
-            # playsound(mouse_three, block = False)
             click_list.append(mouse_three)
         else:
             click_list.append(mouse_three)
@@ -173,7 +171,6 @@ def firstToHit(event):
             mouse_four = mouse_four.read()
         if muted == False:
             winsound.PlaySound(mouse_four, winsound.SND_ASYNC)
-            # playsound(mouse_four, block = False)
             click_list.append(mouse_four)
         else:
             click_list.append(mouse_four)
@@ -199,7 +196,6 @@ def firstToSnare(event):
             mouse_five = mouse_five.read()
         if muted == False:
             winsound.PlaySound(mouse_five, winsound.SND_ASYNC)
-            # playsound(mouse_five, block = False)
             click_list.append(mouse_five)
         else:
             click_list.append(mouse_five)
@@ -220,6 +216,7 @@ def firstToSnare(event):
 
 def record_threaded(event):
     mythread = Thread(target=record_from_speaker, args=(event,))
+    mythread.daemon = True
     mythread.start()
 
 def record_from_speaker(event):
@@ -230,6 +227,9 @@ def record_from_speaker(event):
         DURATION = float(value)
 
         output.insert(END, "[+] Your recording time will begin in 5 seconds\n")
+        output.yview(END)
+
+        output.insert(END, "[+] When recording if sound is to low or high, check your recording device (speakers/headset)\n")
         output.yview(END)
 
         seconds = 0
@@ -273,7 +273,7 @@ def record_from_speaker(event):
                     output.yview(END)
                     exit()
                     
-            output.insert(END, "[+] Recording from: (%s) %s\n\n" % (default_speakers['index'], default_speakers['name']))
+            output.insert(END, "[+] Recording from: %s\n\n" % (default_speakers['name']))
             output.yview(END)
 
             wave_file = wave.open(desktop, 'wb')
@@ -372,7 +372,7 @@ frame.pack(fill=X, padx=10, pady=(0, 10))
 frame = Frame(root)
 scrollbar2 = Scrollbar(frame)
 scrollbar2.pack(side=RIGHT, fill=Y)
-output = Text(frame, font=("Segoe UI", 11))
+output = Text(frame, font=("Segoe UI", 10))
 output.pack(fill=BOTH, expand=True)
 output.insert(END, "Status of squeak music playback, or squeakback\n")
 output.insert(END, "Your current squeaklist will appear below as you create\n")
