@@ -1,47 +1,27 @@
-
-# import pygame
-# from pynput import mouse
-# from pynput import keyboard
-# from pynput.keyboard import Listener as KeyboardListener
-# from pynput.mouse import Listener as MouseListener
-# from infi.systray import SysTrayIcon
 import os
 from tkinter import *
 from tkinter import filedialog as tkFileDialog
+from tkinter import font
+from tkinter import ttk
 from PIL import ImageTk, Image
 from pydub import AudioSegment
-from playsound import playsound
+# from playsound import playsound
+import winsound
+import pyaudiowpatch as pyaudio
+import time
+import wave
+from threading import *
 
-# import time
-
-# pygame.mixer.init()
-
-# file_to_kick        =       "kick1.wav"
-# file_to_clap        =       "clap1.wav"
-# file_to_hit         =       "hit1.wav"
-# file_to_snare       =       "snare1.wav"
-
-# kick_sound          =       pygame.mixer.Sound(file_to_kick)
-# clap_sound          =       pygame.mixer.Sound(file_to_clap)
-# hit_sound           =       pygame.mixer.Sound(file_to_hit)
-# snare_sound         =       pygame.mixer.Sound(file_to_snare)
 
 click_list = []
 
-# def exit_action(icon):
-#     with open("squeaks_gen.txt", "w") as output:
-#         for row in click_list:
-#             s = "".join(map(str, row))
-#             output.write(s + '\n')
-
-#     print("[+] Music sheet recorded")
-#     os._exit(1)
+FILEOPENOPTIONS = dict(defaultextension='.wav',
+                  filetypes=[('Wav files','*.wav')]) #('All files','*.*'), 
 
 def open_mouse_one():
     global mouse_one
-    mouse_one = tkFileDialog.askopenfilename(initialdir=os.getcwd(), title="Select for left mouse button", filetypes=(("mp3 files", "*.mp3"), ("wav Files", "*.wav*")))
+    mouse_one = tkFileDialog.askopenfilename(title="Select for left mouse button", **FILEOPENOPTIONS)
     if not mouse_one:
-        # mouse_one = file_to_kick
         return
     
     with open("lmb", "w") as lmb:
@@ -49,9 +29,8 @@ def open_mouse_one():
 
 def open_mouse_three():
     global mouse_three
-    mouse_three = tkFileDialog.askopenfilename(initialdir=os.getcwd(), title="Select for right mouse button", filetypes=(("mp3 files", "*.mp3"), ("wav files", "*.wav*")))
+    mouse_three = tkFileDialog.askopenfilename(title="Select for right mouse button", **FILEOPENOPTIONS)
     if not mouse_three:
-        # mouse_three = file_to_clap
         return
 
     with open("rmb", "w") as rmb:
@@ -59,9 +38,8 @@ def open_mouse_three():
 
 def open_mouse_four():
     global mouse_four
-    mouse_four = tkFileDialog.askopenfilename(initialdir=os.getcwd(), title="Select for side mouse button 1", filetypes=(("mp3 files", "*.mp3"), ("wav files", "*.wav*")))
+    mouse_four = tkFileDialog.askopenfilename(title="Select for side mouse button 1", **FILEOPENOPTIONS)
     if not mouse_four:
-        # mouse_four = file_to_hit
         return
     
     with open("smb1", "w") as smb_one:
@@ -69,9 +47,8 @@ def open_mouse_four():
 
 def open_mouse_five():
     global mouse_five
-    mouse_five = tkFileDialog.askopenfilename(initialdir=os.getcwd(), title="Select for side mouse button 2", filetypes=(("mp3 files", "*.mp3"), ("wav files", "*.wav*")))
+    mouse_five = tkFileDialog.askopenfilename(title="Select for side mouse button 2", **FILEOPENOPTIONS)
     if not mouse_five:
-        # mouse_five = file_to_snare
         return
     
     with open("smb2", "w") as smb_two:
@@ -84,7 +61,6 @@ def save_directory():
         output.yview(END)
         return
     else:
-        #save_path.delete(0, END)
         opened = tkFileDialog.askdirectory()
         if not opened:
             return
@@ -133,21 +109,19 @@ def mute_music():
         volumeBtn.configure(image=volumePhoto)
         muted = False
     else:  # mute the music
+        winsound.PlaySound(None, winsound.SND_PURGE)
         output.insert(END, "[+] Audio playback is muted\n")
         output.yview(END)
         volumeBtn.configure(image=mutePhoto)
         muted = True
 
 def firstToKick(event):
-    # length = kick_sound.get_length()
-    # kick_sound.play()
-    # playsound(file_to_kick, block = False)
     try:
         if os.path.exists('lmb') and os.path.getsize('lmb') > 0:
             mouse_one = open('lmb', 'r')
             mouse_one = mouse_one.read()
         if muted == False:
-            playsound(mouse_one, block = False)
+            winsound.PlaySound(mouse_one, winsound.SND_ASYNC)
             click_list.append(mouse_one)
         else:
             click_list.append(mouse_one)
@@ -165,17 +139,15 @@ def firstToKick(event):
     
     output.insert(END, str(os.path.basename(mouse_one).split('/')[-1]) + "\n")
     output.yview(END)
-    # time.sleep(length)
 
 def firstToClap(event):
-    # clap_sound.play()
-    # playsound(file_to_clap, block = False)
     try:
         if os.path.exists('rmb') and os.path.getsize('rmb') > 0:
             mouse_three = open('rmb', 'r')
             mouse_three = mouse_three.read()
         if muted == False:
-            playsound(mouse_three, block = False)
+            winsound.PlaySound(mouse_three, winsound.SND_ASYNC)
+            # playsound(mouse_three, block = False)
             click_list.append(mouse_three)
         else:
             click_list.append(mouse_three)
@@ -195,14 +167,13 @@ def firstToClap(event):
     output.yview(END)
 
 def firstToHit(event):
-    # hit_sound.play()
-    # playsound(file_to_hit, block = False)
     try:
         if os.path.exists('smb1') and os.path.getsize('smb1') > 0:
             mouse_four = open('smb1', 'r')
             mouse_four = mouse_four.read()
         if muted == False:
-            playsound(mouse_four, block = False)
+            winsound.PlaySound(mouse_four, winsound.SND_ASYNC)
+            # playsound(mouse_four, block = False)
             click_list.append(mouse_four)
         else:
             click_list.append(mouse_four)
@@ -210,7 +181,6 @@ def firstToHit(event):
         output.insert(END, "[-] Please assign a music file to the Side Mouse Button 1\n")
         output.yview(END)
         return
-    # click_list.append(file_to_hit)
 
     canvas.itemconfigure('event', text='{0}'.format(os.path.basename(click_list[-1]).split('/')[-1]))
     xpos = (canvas.winfo_width() / 2)
@@ -223,16 +193,13 @@ def firstToHit(event):
     output.yview(END)
 
 def firstToSnare(event):
-    # snare_sound.play()
-    # playsound(file_to_snare, block = False)
-    # click_list.append(file_to_snare)
-
     try:
         if os.path.exists('smb2') and os.path.getsize('smb2') > 0:
             mouse_five = open('smb2', 'r')
             mouse_five = mouse_five.read()
         if muted == False:
-            playsound(mouse_five, block = False)
+            winsound.PlaySound(mouse_five, winsound.SND_ASYNC)
+            # playsound(mouse_five, block = False)
             click_list.append(mouse_five)
         else:
             click_list.append(mouse_five)
@@ -251,20 +218,102 @@ def firstToSnare(event):
     output.insert(END, str(os.path.basename(mouse_five).split('/')[-1]) + "\n")
     output.yview(END)
 
+def record_threaded(event):
+    mythread = Thread(target=record_from_speaker, args=(event,))
+    mythread.start()
+
+def record_from_speaker(event):
+    value = n.get().strip()
+    if value == "--- No record option selected ---":
+        return
+    else:
+        DURATION = float(value)
+
+        output.insert(END, "Your recording time will begin in 5 seconds\n")
+        output.yview(END)
+
+        seconds = 0
+        for i in range(0, 5):
+            seconds += 1
+            time.sleep(1)
+            output.insert(END, "%s\n" % seconds)
+            output.yview(END)
+            
+        CHUNK_SIZE = 512
+
+        folder = save_path.get()
+        # os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+        filename = "loopback_record.wav"
+
+        desktop = folder + "\\" + filename
+
+        with pyaudio.PyAudio() as p:
+            try:
+                # Get default WASAPI info
+                wasapi_info = p.get_host_api_info_by_type(pyaudio.paWASAPI)
+            except OSError:
+                output.insert(END, "Looks like WASAPI is not available on the system. Exiting...\n")
+                output.yview(END)
+                exit()
+
+            # Get default WASAPI speakers
+            default_speakers = p.get_device_info_by_index(wasapi_info["defaultOutputDevice"])
+
+            if not default_speakers["isLoopbackDevice"]:
+                for loopback in p.get_loopback_device_info_generator():
+                    """
+                    Try to find loopback device with same name(and [Loopback suffix]).
+                    Unfortunately, this is the most adequate way at the moment.
+                    """
+                    if default_speakers["name"] in loopback["name"]:
+                        default_speakers = loopback
+                        break
+                else:
+                    output.insert(END, "Default loopback output device not found. Exiting...\n")
+                    output.yview(END)
+                    exit()
+                    
+            output.insert(END, "Recording from: (%s) %s\n\n" % (default_speakers['index'], default_speakers['name']))
+            output.yview(END)
+
+            wave_file = wave.open(desktop, 'wb')
+            wave_file.setnchannels(default_speakers["maxInputChannels"])
+            wave_file.setsampwidth(pyaudio.get_sample_size(pyaudio.paInt16))
+            wave_file.setframerate(int(default_speakers["defaultSampleRate"]))
+
+            def callback(in_data, frame_count, time_info, status):
+                wave_file.writeframes(in_data)
+                return (in_data, pyaudio.paContinue)
+
+            with p.open(format=pyaudio.paInt16, channels=default_speakers["maxInputChannels"], rate=int(default_speakers["defaultSampleRate"]), frames_per_buffer=CHUNK_SIZE, input=True, input_device_index=default_speakers["index"],stream_callback=callback) as stream:
+                output.insert(END, "The next %s seconds will be recorded and saved to %s\n\n" % (DURATION, folder))
+                output.yview(END)
+                time.sleep(DURATION)
+            
+            output.insert(END, "The recording time is over and your file has been saved to %s\n" % (desktop))
+            output.yview(END)
+            wave_file.close()
+
 
 root = Tk()
 root.title("Squeak Music Alchemy")
 root.iconbitmap("squeakicon.ico")
 root.option_readfile("optionDB")
+root.geometry("584x800")
+root.resizable(0, 1)
 
 frame = Frame(root)
-button = Button(frame, text="Left Mouse Button", command=open_mouse_one)
+leftButton = ImageTk.PhotoImage(Image.open('buttons\\left.png'))
+button = Button(frame, image=leftButton, command=open_mouse_one)
 button.pack(side=LEFT, padx=10)
-button = Button(frame, text="Right Mouse Button", command=open_mouse_three)
+rightButton = ImageTk.PhotoImage(Image.open('buttons\\right.png'))
+button = Button(frame, image=rightButton, command=open_mouse_three)
 button.pack(side=LEFT, padx=10)
-button = Button(frame, text="Side Mouse Button 1", command=open_mouse_four)
+sideButton1 = ImageTk.PhotoImage(Image.open('buttons\\side1.png'))
+button = Button(frame, image=sideButton1, command=open_mouse_four)
 button.pack(side=LEFT, padx=10)
-button = Button(frame, text="Side Mouse Button 2", command=open_mouse_five)
+sideButton2 = ImageTk.PhotoImage(Image.open('buttons\\side2.png'))
+button = Button(frame, image=sideButton2, command=open_mouse_five)
 button.pack(side=LEFT, padx=10)
 frame.pack(fill=X)
 
@@ -278,7 +327,7 @@ button.pack(side=LEFT)
 mutePhoto = ImageTk.PhotoImage(Image.open('mute.png'))
 volumePhoto = ImageTk.PhotoImage(Image.open('volume.png'))
 volumeBtn = Button(frame, image=volumePhoto, command=mute_music)
-volumeBtn.pack(side=LEFT)
+volumeBtn.pack(side=LEFT, padx=(0, 10))
 
 frame.pack(fill=X)
 
@@ -290,17 +339,36 @@ canvas.bind("<Button-4>", firstToHit)
 canvas.bind("<Button-5>", firstToSnare)
 canvas.pack(fill='both', expand = True, padx=10, pady=10)
 
-background = ImageTk.PhotoImage(Image.open('ocean.jpg'))
+background = ImageTk.PhotoImage(Image.open('wallpaper.jpg'))
 canvas.create_image(0, 0, image=background, anchor=NW)
 
-mytext = canvas.create_text(275, 150, fill='black', anchor="c", tags=['event'])
+mytext = canvas.create_text(275, 150, fill='white', anchor="c", tags=['event'])
 
 frame.pack(fill='both', expand = True)
+
+root.option_add("*selectBackground", "#5db2ff")
+root.option_add("*selectForeground", "white")
+bigfont = font.Font(family="Segoe UI", size=13)
+root.option_add("*TCombobox*Font", bigfont)
+
+frame = Frame(root)
+n = StringVar(value='--- No record duration selected ---') 
+record_duration = ttk.Combobox(frame, textvariable=n)
+record_duration['values'] = (
+    '5.0',
+    '10.0',
+    '15.0',
+    '30.0',
+    '60.0')
+record_duration.bind("<<ComboboxSelected>>", record_threaded)
+record_duration.pack(fill=BOTH, expand=True)
+frame.pack(fill=X, padx=10, pady=(0, 10))
+
 
 frame = Frame(root)
 scrollbar2 = Scrollbar(frame)
 scrollbar2.pack(side=RIGHT, fill=Y)
-output = Text(frame)
+output = Text(frame, font=("Segoe UI", 11))
 output.pack(fill=BOTH, expand=True)
 output.insert(END, "Status of squeak music playback, or squeakback\n")
 output.insert(END, "Your current squeaklist will appear below as you create\n")
@@ -310,49 +378,3 @@ scrollbar2.config(command=output.yview)
 frame.pack(fill=BOTH, expand=True)
 
 root.mainloop()
-
-
-# def on_click(x, y, button, pressed):
-#     if pressed and button == mouse.Button.left:
-#         firstToKick()
-#         click_list.append(file_to_kick)
-
-#     if pressed and button == mouse.Button.right:
-#         firstToClap()
-#         click_list.append(file_to_clap)
-    
-#     if pressed and button == mouse.Button.x1:
-#         firstToHit()
-#         click_list.append(file_to_hit)
-
-#     if pressed and button == mouse.Button.x2:
-#         firstToSnare()
-#         click_list.append(file_to_snare)
-
-# def on_press(key):
-#     # print(str(key))
-
-#     if key == keyboard.Key.esc:     
-#         print("[+] The program Squeak has ended after pressing the Esc key")
-#         exit_action(icon)
-
-#     if key == keyboard.Key.f8:
-#         mouse_listener.stop()
-#         print("[+] The Mouse Listener has stopped after pressing the f8 key")
-
-#     # if key == keyboard.Key.f1:
-#     #     with MouseListener(on_click=on_click) as mouse_listener_reload:
-#     #         with KeyboardListener(on_press=on_press) as keyboard_listener:
-#     #             mouse_listener_reload.join()
-#     #             keyboard_listener.join()
-                
-# if __name__ == '__main__':
-#     menu_options = "" #(("Exit Squeak", None, lambda : exit_action(icon)),)
-#     icon = SysTrayIcon("squeakicon.ico", "Squeak 1.0.0", menu_options, on_quit=exit_action)
-
-#     with MouseListener(on_click=on_click) as mouse_listener:
-#         with KeyboardListener(on_press=on_press) as keyboard_listener:
-#             icon.start()
-#             mouse_listener.join()
-#             keyboard_listener.join()
-            
