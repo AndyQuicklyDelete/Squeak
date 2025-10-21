@@ -53,6 +53,43 @@ def open_mouse_five():
     with open("smb2", "w") as smb_two:
         smb_two.write(mouse_five)
 
+def re_build_squeakgen():
+    file_types = [("Squeak Lists", "*.squeak"), ("Text Files", "*.txt")]
+    opened = tkFileDialog.askopenfilename(filetypes=file_types, title="Select your Squeaklist")
+
+    try:
+        folder = save_path.get()
+    except:
+        output.insert(END, "[-] There was an error in your saved folder path\n")
+        output.yview(END)
+        return
+    
+    #os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+
+    if not opened:
+        return    
+
+    with open(opened, 'r') as file:
+        lines = []
+        for line in file:
+            line = line.strip()
+            lines.append(line)
+
+    wavs = lines
+
+    combined_wav = AudioSegment.empty()
+    for wav in wavs:                                                            
+        order = AudioSegment.from_wav(wav)                                                          
+        combined_wav += order 
+    try:
+        combined_wav.export(folder + "\\re_merged_sound.wav", format="wav")
+        output.insert(END, "[+] Generated music file saved as re_merged_sound.wav\n")
+        output.yview(END)
+    except:
+        output.insert(END, "[-] There was an error creating your re_merged_sound.wav file\n")
+        output.yview(END)
+        return
+
 def save_directory():
     if click_list == []:
         output.insert(END, "[-] Your squeaklist is currently empty\n")
@@ -67,7 +104,7 @@ def save_directory():
         save_path.delete(0, END)
         save_path.insert(END, opened)
 
-        with open(opened + "\\squeaks_gen.txt", "w") as audio_output:
+        with open(opened + "\\squeaks_gen.squeak", "w") as audio_output:
             for row in click_list:
                 s = "".join(map(str, row))
                 audio_output.write(s + '\n')
@@ -76,7 +113,7 @@ def save_directory():
         output.insert(END, "[+] Generating music file\n")
         output.yview(END)
 
-        with open(opened + '\\squeaks_gen.txt', 'r') as file:
+        with open(opened + '\\squeaks_gen.squeak', 'r') as file:
             lines = []
 
             for line in file:
@@ -90,8 +127,8 @@ def save_directory():
             order = AudioSegment.from_wav(wav)                                                          
             combined_wav += order 
 
-        combined_wav.export(opened + "\\merged_sound.mp3", format="mp3", bitrate="192k")
-        output.insert(END, "[+] Generated music file saved as merged_sound.mp3\n")
+        combined_wav.export(opened + "\\merged_sound.wav", format="wav")
+        output.insert(END, "[+] Generated music file saved as merged_sound.wav\n")
         output.yview(END)
 
         click_list.clear()
@@ -239,10 +276,9 @@ def record_from_speaker(event):
             output.insert(END, "[+] \t\t%s\n" % seconds)
             output.yview(END)
             
-        CHUNK_SIZE = 512
+        CHUNK_SIZE = 2048
 
         folder = save_path.get()
-        # os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
         filename = "loopback_record.wav"
 
         desktop = folder + "\\" + filename
@@ -256,15 +292,10 @@ def record_from_speaker(event):
                 output.yview(END)
                 exit()
 
-            # Get default WASAPI speakers
             default_speakers = p.get_device_info_by_index(wasapi_info["defaultOutputDevice"])
 
             if not default_speakers["isLoopbackDevice"]:
                 for loopback in p.get_loopback_device_info_generator():
-                    """
-                    Try to find loopback device with same name(and [Loopback suffix]).
-                    Unfortunately, this is the most adequate way at the moment.
-                    """
                     if default_speakers["name"] in loopback["name"]:
                         default_speakers = loopback
                         break
@@ -288,7 +319,7 @@ def record_from_speaker(event):
             with p.open(format=pyaudio.paInt16, channels=default_speakers["maxInputChannels"], rate=int(default_speakers["defaultSampleRate"]), frames_per_buffer=CHUNK_SIZE, input=True, input_device_index=default_speakers["index"],stream_callback=callback) as stream:
                 output.insert(END, "[+] The next %s seconds will be recorded and saved to %s\n\n" % (DURATION, folder))
                 output.yview(END)
-                time.sleep(DURATION)
+                time.sleep(DURATION + 2)
             
             output.insert(END, "[+] The recording time is over and your file has been saved to %s\n" % (desktop))
             output.yview(END)
@@ -305,6 +336,19 @@ root.iconbitmap("squeakicon.ico")
 root.option_readfile("optionDB")
 root.geometry("584x800")
 root.resizable(0, 1)
+
+menubar = Menu(root)
+root.config(menu=menubar)
+
+file_menu = Menu(menubar, tearoff = 0)
+# file_menu.add_command(label='Help & Tutorials', command=None, font=("Segoe UI", 15))
+file_menu.add_command(label='Rebuild a Track', command=re_build_squeakgen, font=("Segoe UI", 15))
+
+menubar.add_cascade(
+    label="File",
+    menu=file_menu,
+    font=("Segoe UI", 15)
+)
 
 frame = Frame(root)
 leftButton = ImageTk.PhotoImage(Image.open('buttons\\left.png'))
@@ -363,7 +407,9 @@ record_duration['values'] = (
     '10.0',
     '15.0',
     '30.0',
-    '60.0')
+    '60.0',
+    '120.0',
+    '180.0')
 record_duration.bind("<<ComboboxSelected>>", record_threaded)
 record_duration.pack(fill=BOTH, expand=True)
 frame.pack(fill=X, padx=10, pady=(0, 10))
